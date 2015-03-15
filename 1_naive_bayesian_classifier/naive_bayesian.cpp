@@ -28,7 +28,7 @@ int main()
     total = 0;
     while(scanf("%lf %lf %lf %lf %d",&a,&b,&c,&d,&e))
     {
-        //printf("%lf %lf %lf %lf %d\n",a,b,c,d,e);
+        printf("%f %f %f %f %d\n",a,b,c,d,e);
         SL.push_back(a);
         SW.push_back(b);
         PL.push_back(c);
