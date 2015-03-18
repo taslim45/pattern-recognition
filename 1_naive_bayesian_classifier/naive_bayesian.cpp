@@ -3,154 +3,194 @@
 #include <vector>
 #include <queue>
 using namespace std;
+#define pi 3.1416
 
-vector <double> SL,SW,PL,PW;
-vector <int> cls;
-int cls_count[3];
-int total;
-double P0,P1,P2;
 struct info
 {
-    int clas;
-    double SLsum,SWsum,PLsum,PWsum;
-    double SLvar,SWvar,PLvar,PWvar;
-    double SLmean,SWmean,PLmean,PWmean;
-    double slXminusU,swXminusU,plXminusU,pwXminusU;
+    int which_class;
     vector <double> SL,SW,PL,PW;
+    int ndata;
+    double avgSL,avgSW,avgPL,avgPW;
+    double varSL,varSW,varPL,varPW;
 };
-vector <info> bank;
+
+vector <info> data;
+
+void calculate_average()
+{
+    int i,j;
+    for(i=0; i<3; i++)
+    {
+        info ii = data[i];
+        ii.ndata = ii.SL.size();
+        double sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += ii.SL[j];
+        }
+        ii.avgSL = sum / ii.ndata;
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += ii.SW[j];
+        }
+        ii.avgSW = sum / ii.ndata;
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += ii.PL[j];
+        }
+        ii.avgPL = sum / ii.ndata;
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += ii.PW[j];
+        }
+        ii.avgPW = sum / ii.ndata;
+        data[i] = ii;
+    }
+}
+
+void calculate_variance()
+{
+    int i,j;
+    for(i=0; i<3; i++)
+    {
+        info ii = data[i];
+        ii.ndata = ii.SL.size();
+        double sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += (ii.SL[j] - ii.avgSL)*(ii.SL[j] - ii.avgSL);
+        }
+        ii.varSL = sum / ii.ndata;
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += (ii.SW[j] - ii.avgSW)*(ii.SW[j] - ii.avgSW);
+        }
+        ii.varSW = (sum / ii.ndata);
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += (ii.PL[j] - ii.avgPL)*(ii.PL[j] - ii.avgPL);
+        }
+        ii.varPL = (sum / ii.ndata);
+        sum = 0;
+        for(j=0; j<ii.ndata; j++)
+        {
+            sum += (ii.PW[j] - ii.avgPW)*(ii.PW[j] - ii.avgPW);
+        }
+        ii.varPW = (sum / ii.ndata);
+        //printf("%f %f %f %f\n",ii.varPL,ii.varPW,ii.varSL,ii.varSW);
+        data[i] = ii;
+    }
+}
+
+double denominator(double variance)
+{
+    return sqrt(2*pi*variance);
+}
+double numerator(double variance,double X,double average)
+{
+    return exp(-1*(X-average)*(X-average)/(2*variance));
+}
+void print_info()
+{
+    int i;
+    for(i=0; i<3; i++)
+    {
+        info ii = data[i];
+        printf("average %f %f %f %f\n",ii.avgSL,ii.avgSW,ii.avgPL,ii.avgPW);
+        printf("variance %f %f %f %f\n",ii.varSL,ii.varSW,ii.varPL,ii.varPW);
+        printf("# %d\n",ii.ndata);
+    }
+}
 
 int main()
 {
     freopen("set_training.txt","r",stdin);
     double a,b,c,d;
     int e;
-    total = 0;
+    info c0,c1,c2;
+    c0.which_class = 0;
+    c1.which_class = 1;
+    c2.which_class = 2;
+    data.push_back(c0),data.push_back(c1),data.push_back(c2);
     while(scanf("%lf %lf %lf %lf %d",&a,&b,&c,&d,&e))
     {
-        printf("%f %f %f %f %d\n",a,b,c,d,e);
-        SL.push_back(a);
-        SW.push_back(b);
-        PL.push_back(c);
-        PW.push_back(d);
-        cls.push_back(e);
-        cls_count[e]++;
-        total++;
-    }
-    //printf("%d %d %d %d\n",cls_count[0],cls_count[1],cls_count[2],total);
-    P0 = (double)cls_count[0] / total;
-    P1 = (double)cls_count[1] / total;
-    P2 = (double)cls_count[2] / total;
-    //printf("%lf %lf %lf\n",P0,P1,P2);
-    info c0,c1,c2;
-    c0.clas = 0;
-    c0.pwXminusU = c0.plXminusU = c0.swXminusU = c0.slXminusU = c0.PLsum = c0.PWsum = c0.SLsum = c0.SWsum = 0.0;
-    c1.clas = 0;
-    c1.pwXminusU = c1.plXminusU = c1.swXminusU = c1.slXminusU = c1.PLsum = c1.PWsum = c1.SLsum = c1.SWsum = 0.0;
-    c2.clas = 0;
-    c2.pwXminusU = c2.plXminusU = c2.swXminusU = c2.slXminusU = c2.PLsum = c2.PWsum = c2.SLsum = c2.SWsum = 0.0;
-    bank.push_back(c0);
-    bank.push_back(c1);
-    bank.push_back(c2);
-    for(int i=0; i<total; i++)
-    {
-        info v;
-        if(cls[i] == 0)
-        {
-            v = bank[0];
-            v.PLsum += PL[i];
-            v.PWsum += PW[i];
-            v.SLsum += SL[i];
-            v.SWsum += SW[i];
-            v.PL.push_back(PL[i]);
-            v.PW.push_back(PW[i]);
-            v.SL.push_back(SL[i]);
-            v.SW.push_back(SW[i]);
-            bank[0] = v;
-        }
-        else if(cls[i] == 1)
-        {
-            v = bank[1];
-            v.PLsum += PL[i];
-            v.PWsum += PW[i];
-            v.SLsum += SL[i];
-            v.SWsum += SW[i];
-            v.PL.push_back(PL[i]);
-            v.PW.push_back(PW[i]);
-            v.SL.push_back(SL[i]);
-            v.SW.push_back(SW[i]);
-            bank[1] = v;
-        }
-        else
-        {
-            v = bank[2];
-            v.PLsum += PL[i];
-            v.PWsum += PW[i];
-            v.SLsum += SL[i];
-            v.SWsum += SW[i];
-            v.PL.push_back(PL[i]);
-            v.PW.push_back(PW[i]);
-            v.SL.push_back(SL[i]);
-            v.SW.push_back(SW[i]);
-            bank[2] = v;
-        }
-    }
-    for(int j=0; j<3; j++)
-    {
-        info v;
-        v = bank[j];
-        v.PLmean = v.PLsum / cls_count[j];
-        v.PWmean = v.PWsum / cls_count[j];
-        v.SLmean = v.SLsum / cls_count[j];
-        v.SWmean = v.SWsum / cls_count[j];
-        bank[j] = v;
-    }
-    for(int j=0; j<3; j++)
-    {
-        info v;
-        v = bank[j];
-        //printf("%d %lf %lf %lf %lf\n",cls_count[j],v.SLsum,v.SWsum,v.PLsum,v.PWsum);
-        //printf("%d %d %d %d %d\n",j,v.PL.size(),v.PW.size(),v.SL.size(),v.SW.size());
-        vector <double> t;
-        t = v.PL;
-        for(int k=0; k<t.size(); k++)
-        {
-            double val = t[k] - v.PLmean;
-            v.plXminusU += (val*val);
-        }
-        v.PLvar = sqrt(v.plXminusU / t.size());
-        t.clear();
-        t = v.PW;
-        for(int k = 0; k<t.size(); k++)
-        {
-            double val = t[k] - v.PWmean;
-            v.pwXminusU += (val*val);
-        }
-        v.PWvar = sqrt(v.pwXminusU / t.size());
-        t.clear();
-        t = v.SL;
-        for(int k = 0; k<t.size(); k++)
-        {
-            double val = t[k] - v.SLmean;
-            v.slXminusU += (val*val);
-        }
-        v.SLvar = sqrt(v.slXminusU / t.size());
-        t.clear();
-        t = v.SW;
-        for(int k = 0; k<t.size(); k++)
-        {
-            double val = t[k] - v.SWmean;
-            v.swXminusU += (val*val);
-        }
-        v.SWvar = sqrt(v.swXminusU / t.size());
-        bank[j] = v;
+        /*
+        * a => SL
+        * b => SW
+        * c => PL
+        * d => PW
+        * e =>CLASS
+        */
+        //printf("%f %f %f %f %d\n",a,b,c,d,e);
+        info ii = data[e];
+        ii.SL.push_back(a),ii.SW.push_back(b),ii.PL.push_back(c),ii.PW.push_back(d);
+        data[e] = ii;
     }
     fclose(stdin);
-    double p0,p1,p2;
-    freopen("set_training.txt","r",stdin);
+    calculate_average();
+    calculate_variance();
+    //print_info();
+
+    freopen("set_test.txt","r",stdin);
+    double maxx;
+    pair <double,int> ans;
+    ans.first = 0;
+    ans.second = -1;
+    int cnt = 0;
+    int datacount = 0;
     while(scanf("%lf %lf %lf %lf %d",&a,&b,&c,&d,&e))
     {
+        datacount++;
+        // 1/sqrt(2*pi*variance) * e ^ -(X-mean)^2/2*variance^2
+        /*
+        * a => SL
+        * b => SW
+        * c => PL
+        * d => PW
+        * e =>CLASS
+        */
 
+        maxx = 0;
+        int i;
+        for(i=0; i<3; i++)
+        {
+            info ii = data[i];
+            double den = denominator(ii.varSL);
+            double num = numerator(ii.varSL,a,ii.avgSL);
+            //printf("%f %f %f\n",d,n,ii.varSL);
+            double resSL = num/den;
+            den = denominator(ii.varSW);
+            num = numerator(ii.varSW,b,ii.avgSW);
+            double resSW = num/den;
+            den = denominator(ii.varPL);
+            num = numerator(ii.varPL,c,ii.avgPL);
+            double resPL = num/den;
+            den = denominator(ii.varPW);
+            num = numerator(ii.varPW,d,ii.avgPW);
+            double resPW = num/den;
+            //printf("%f %f %f\n",d,n,resPW);
+
+            double res = resSL * resSW * resPL * resPW * ii.ndata;
+            //printf("res %f %f %f %f %f\n",res,resSL,resSW,resPL,resPW);
+            if(res > maxx)
+            {
+                ans.first = res;
+                ans.second = i;
+                maxx = res;
+            }
+        }
+        if(e == ans.second) cnt++;
+        printf("Real %d,Estimated %d\n",e,ans.second);
     }
+    printf("# of matched samples %d out of %d\n",cnt,datacount);
+    printf("accuracy %f \%\n",(double)cnt/datacount * 100);
+    fclose(stdin);
+
+
     return 0;
 }
