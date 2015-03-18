@@ -63,25 +63,25 @@ void calculate_variance()
         {
             sum += (ii.SL[j] - ii.avgSL)*(ii.SL[j] - ii.avgSL);
         }
-        ii.varSL = sqrt(sum / ii.ndata);
+        ii.varSL = sum / ii.ndata;
         sum = 0;
         for(j=0; j<ii.ndata; j++)
         {
             sum += (ii.SW[j] - ii.avgSW)*(ii.SW[j] - ii.avgSW);
         }
-        ii.varSW = sqrt(sum / ii.ndata);
+        ii.varSW = (sum / ii.ndata);
         sum = 0;
         for(j=0; j<ii.ndata; j++)
         {
             sum += (ii.PL[j] - ii.avgPL)*(ii.PL[j] - ii.avgPL);
         }
-        ii.varPL = sqrt(sum / ii.ndata);
+        ii.varPL = (sum / ii.ndata);
         sum = 0;
         for(j=0; j<ii.ndata; j++)
         {
             sum += (ii.PW[j] - ii.avgPW)*(ii.PW[j] - ii.avgPW);
         }
-        ii.varPW = sqrt(sum / ii.ndata);
+        ii.varPW = (sum / ii.ndata);
         //printf("%f %f %f %f\n",ii.varPL,ii.varPW,ii.varSL,ii.varSW);
         data[i] = ii;
     }
@@ -89,11 +89,11 @@ void calculate_variance()
 
 double denominator(double variance)
 {
-    return sqrt(2*pi) * variance;
+    return sqrt(2*pi*variance);
 }
 double numerator(double variance,double X,double average)
 {
-    return exp(-1*(X-average)*(X-average)/(2*variance*variance));
+    return exp(-1*(X-average)*(X-average)/(2*variance));
 }
 void print_info()
 {
@@ -101,7 +101,9 @@ void print_info()
     for(i=0; i<3; i++)
     {
         info ii = data[i];
-        printf("%f %f %f %f\n",ii.avgPL,ii.avgPW,ii.avgSL,ii.avgSW);
+        printf("average %f %f %f %f\n",ii.avgSL,ii.avgSW,ii.avgPL,ii.avgPW);
+        printf("variance %f %f %f %f\n",ii.varSL,ii.varSW,ii.varPL,ii.varPW);
+        printf("# %d\n",ii.ndata);
     }
 }
 
@@ -139,8 +141,11 @@ int main()
     pair <double,int> ans;
     ans.first = 0;
     ans.second = -1;
+    int cnt = 0;
+    int datacount = 0;
     while(scanf("%lf %lf %lf %lf %d",&a,&b,&c,&d,&e))
     {
+        datacount++;
         // 1/sqrt(2*pi*variance) * e ^ -(X-mean)^2/2*variance^2
         /*
         * a => SL
@@ -149,28 +154,29 @@ int main()
         * d => PW
         * e =>CLASS
         */
+
         maxx = 0;
         int i;
         for(i=0; i<3; i++)
         {
             info ii = data[i];
-            double d = denominator(ii.varSL);
-            double n = numerator(ii.varSL,a,ii.avgSL);
+            double den = denominator(ii.varSL);
+            double num = numerator(ii.varSL,a,ii.avgSL);
             //printf("%f %f %f\n",d,n,ii.varSL);
-            double resSL = n/d;
-            d = denominator(ii.varSW);
-            n = numerator(ii.varSW,b,ii.avgSW);
-            double resSW = n/d;
-            d = denominator(ii.varPL);
-            n = numerator(ii.varPL,c,ii.avgPL);
-            double resPL = n/d;
-            d = denominator(ii.varPW);
-            n = numerator(ii.varPW,c,ii.avgPW);
-            double resPW = n/d;
-            printf("%f %f %f\n",d,n,resPW);
+            double resSL = num/den;
+            den = denominator(ii.varSW);
+            num = numerator(ii.varSW,b,ii.avgSW);
+            double resSW = num/den;
+            den = denominator(ii.varPL);
+            num = numerator(ii.varPL,c,ii.avgPL);
+            double resPL = num/den;
+            den = denominator(ii.varPW);
+            num = numerator(ii.varPW,d,ii.avgPW);
+            double resPW = num/den;
+            //printf("%f %f %f\n",d,n,resPW);
 
             double res = resSL * resSW * resPL * resPW * ii.ndata;
-            printf("res %f %f %f %f %f\n",res,resSL,resSW,resPL,resPW);
+            //printf("res %f %f %f %f %f\n",res,resSL,resSW,resPL,resPW);
             if(res > maxx)
             {
                 ans.first = res;
@@ -178,9 +184,11 @@ int main()
                 maxx = res;
             }
         }
-
-        //printf("Real %d,Estimated %d\n",e,ans.second);
+        if(e == ans.second) cnt++;
+        printf("Real %d,Estimated %d\n",e,ans.second);
     }
+    printf("# of matched samples %d out of %d\n",cnt,datacount);
+    printf("accuracy %f \%\n",(double)cnt/datacount * 100);
     fclose(stdin);
 
 
