@@ -55,13 +55,11 @@ void run_perceptron()
 {
     double sum = 0;
     int error = 1;
-    w0 = 0.8, w1 = 0.4, w2 = 0.0;   // initially set to some arbitrary weight
-    //w0 = w1 = w2 = 0.0 // initially set to 0
+    w0 = w1 = w2 = 0.0; // initially set to 0
     x0 = 1.0;
     while(error)
     {
         error = 0;
-        double w_0 = w0, w_1 = w1, w_2 = w2;
         int predicted_class;
         for(int i=0; i<train.size(); i++)
         {
@@ -77,14 +75,11 @@ void run_perceptron()
             int mult = predicted_class - d._class;
             if(mult!=0) error++;
 
-            w_0 -= mult * RATE * x0;
-            w_1 -= mult * RATE * d.x1;
-            w_2 -= mult * RATE * d.x2;
+            w0 -= mult * RATE * x0;
+            w1 -= mult * RATE * d.x1;
+            w2 -= mult * RATE * d.x2;
+
         }
-        w0 = w_0;
-        w1 = w_1;
-        w2 = w_2;
-        //if(error < 2) break;
     }
 }
 
