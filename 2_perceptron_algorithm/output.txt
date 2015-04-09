@@ -1,0 +1,21 @@
+Pocket Algorithm
+Weight assigned
+w0=-46.800000, w1=35.351200, w2=-18.498620
+Total test data : 100
+Correctly classified : 96
+Incorrectly classified : 4
+=======
+Reward and Punishment
+Weight assigned
+w0=-4.600000, w1=2.612890, w2=-0.904480
+Total test data : 100
+Correctly classified : 96
+Incorrectly classified : 4
+=======
+Simple Perceptron
+Weight assigned
+w0=-46.800000, w1=35.351200, w2=-18.498620
+Total test data : 100
+Correctly classified : 96
+Incorrectly classified : 4
+=======

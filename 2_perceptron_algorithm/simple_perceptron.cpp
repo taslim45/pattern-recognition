@@ -115,16 +115,18 @@ void run_test()
 int main()
 {
     freopen("Train.txt","r",stdin);
+    freopen("output.txt","a+",stdout);
     input();
     //print_info();
     run_perceptron();
     fclose(stdin);
+    puts("Simple Perceptron");
     puts("Weight assigned");
     printf("w0=%f, w1=%f, w2=%f\n",w0,w1,w2);
-    puts("=======");
 
     freopen("Test.txt","r",stdin);
     run_test();
+    puts("=======");
     fclose(stdin);
 
     return 0;
