@@ -63,7 +63,7 @@ double diff(rgb &a, rgb &b)
     double q = (b.r * b.r) + (b.g * b.g) + (b.b * b.b);
 
 }
-void test(Image &img,Image &temp)
+void correlationtest(Image &img,Image &temp)
 {
     int bestX=-1,bestY=-1;
     double bestSAD;
@@ -123,6 +123,6 @@ int main()
     temp.greyscale();
     temp.saveImage("grey_template2.bmp");
 
-    test(img,temp);
+    correlationtest(img,temp);
     return 0;
 }
