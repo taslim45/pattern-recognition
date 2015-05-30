@@ -131,7 +131,7 @@ void run_test()
 int main()
 {
     freopen("Train.txt","r",stdin);
-    freopen("output.txt","w",stdout);
+    //freopen("output.txt","w",stdout);
     input();
     //print_info();
     run_perceptron();
