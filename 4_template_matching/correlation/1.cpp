@@ -53,14 +53,14 @@ public:
 };
 double diff(rgb &a, rgb &b)
 {
-
+    /*
     double p = (a.r - b.r)*(a.r - b.r);
     double q = (a.g - b.g)*(a.g - b.g);
     double r = (a.b - b.b)*(a.b - b.b);
     return sqrt(p + q + r);
-
-    //double p = (a.r * a.r) + (a.g * a.g) + (a.b * a.b);
-    //double q = (b.r * b.r) + (b.g * b.g) + (b.b * b.b);
+    */
+    double p = (a.r * a.r) + (a.g * a.g) + (a.b * a.b);
+    double q = (b.r * b.r) + (b.g * b.g) + (b.b * b.b);
 
 }
 void correlationtest(Image &img,Image &temp)
@@ -68,7 +68,7 @@ void correlationtest(Image &img,Image &temp)
     int bestX=-1,bestY=-1;
     double bestSAD;
     double maxSAD,SAD;
-    maxSAD = 1e-100;
+    maxSAD = -1;
     int i,j;
     for(int x=0; x<=img.height - temp.height; x++)
     {
@@ -86,21 +86,20 @@ void correlationtest(Image &img,Image &temp)
                     temp.collectPixelAt(i,j);
                     rgb refTemp(temp.r,temp.g,temp.b);
 
-                    //printf("%d %d %d\n",refImg.r,refImg.g,refImg.b);
-                    b += (refImg.r)*(refImg.r);
-                    c += (refTemp.r)*(refTemp.r);
-                    a += (refImg.r*refTemp.r);
+                    b += (refImg.r*refImg.r) + (refImg.g*refImg.g) + (refImg.b*refImg.b);
+                    c += (refTemp.r*refTemp.r) + (refTemp.g*refTemp.g) + (refTemp.b*refTemp.b);
+                    a += (refImg.r*refImg.r) + (refImg.g*refImg.g) + (refImg.b*refImg.b) + (refTemp.r*refTemp.r) + (refTemp.g*refTemp.g) + (refTemp.b*refTemp.b);
                     //SAD += diff(refImg,refTemp);
                 }
-            }
-            SAD = a / sqrt(b*c);
-            if(SAD >= maxSAD)
-            {
-                maxSAD = SAD;
-                // give me min SAD
-                bestX = x;
-                bestY = y;
-                bestSAD = SAD;
+                SAD = a / sqrt(b*c);
+                if(SAD > maxSAD)
+                {
+                    maxSAD = SAD;
+                    // give me min SAD
+                    bestX = x;
+                    bestY = y;
+                    bestSAD = SAD;
+                }
             }
         }
     }

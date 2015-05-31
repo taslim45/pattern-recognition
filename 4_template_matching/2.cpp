@@ -51,18 +51,25 @@ public:
         image.get_pixel(x,y,r,g,b);
     }
 };
-double diff(rgb &a, rgb &b)
+
+int row[]={0,-1,0,1,-1,1, 1,-1};
+int col[]={1,0,-1,0, 1,1,-1,-1};
+
+vector< pair<int,int> > getPoints(int r,int c,int k)
 {
-
-    double p = (a.r - b.r)*(a.r - b.r);
-    double q = (a.g - b.g)*(a.g - b.g);
-    double r = (a.b - b.b)*(a.b - b.b);
-    return sqrt(p + q + r);
-
-    //double p = (a.r * a.r) + (a.g * a.g) + (a.b * a.b);
-    //double q = (b.r * b.r) + (b.g * b.g) + (b.b * b.b);
+	vector<pair<int,int> > v;
+	int mr=r,mc=c;
+	v.push_back(make_pair(r,c));
+	for(int i=0;i<8;i++)
+    {
+		int nr = mr + row[i]*(1<<k);
+		int nc = mc + col[i]*(1<<k);
+		v.push_back(make_pair(nr,nc));
+	}
+	return v;
 
 }
+
 void correlationtest(Image &img,Image &temp)
 {
     int bestX=-1,bestY=-1;
@@ -70,18 +77,32 @@ void correlationtest(Image &img,Image &temp)
     double maxSAD,SAD;
     maxSAD = 1e-100;
     int i,j;
-    for(int x=0; x<=img.height - temp.height; x++)
+    int n = img.height;
+    int m = temp.height;
+    int brow = n/2;
+    int bcol = n/2;
+    int itr = log(n-1)/log(2)-1;
+
+    while(itr)
     {
-        for(int y=0; y<=img.width - temp.width; y++)
+        vector < pair <int,int> > points = getPoints(brow,bcol,itr);
+        itr--;
+
+        for(int k=0; k<points.size(); k++)
         {
-            SAD = 0.0;
+            int p = points[k].first;
+            int q = points[k].second;
+
+            if(p+m>=n) continue;
+            if(q+m>=n) continue;
             double a,b,c;
             a = b = c = 0.0;
+
             for(j=0; j<temp.width; j++)
             {
                 for(i=0; i<temp.height; i++)
                 {
-                    img.collectPixelAt(x+i,y+j);
+                    img.collectPixelAt(p+i,q+j);
                     rgb refImg(img.r,img.g,img.b);
                     temp.collectPixelAt(i,j);
                     rgb refTemp(temp.r,temp.g,temp.b);
@@ -98,12 +119,13 @@ void correlationtest(Image &img,Image &temp)
             {
                 maxSAD = SAD;
                 // give me min SAD
-                bestX = x;
-                bestY = y;
+                bestX = p;
+                bestY = q;
                 bestSAD = SAD;
             }
         }
     }
+
     printf("%d %d\n",bestX,bestY);
 
     bitmap_image imgg("image2.bmp");
@@ -111,7 +133,7 @@ void correlationtest(Image &img,Image &temp)
     unsigned char g = 0;
     unsigned char b = 0;
     imgg.set_pixel(bestX,bestY,r,g,b);
-    imgg.save_image("result.bmp");
+    imgg.save_image("result_logarithm.bmp");
 }
 
 int main()
